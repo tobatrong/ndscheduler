@@ -1,9 +1,8 @@
 """A job to run executable programs."""
 
-from subprocess import call
 
-from ndscheduler.corescheduler import job
-
+from subprocess import PIPE,STDOUT, Popen
+from ndscheduler import job
 
 class ShellJob(job.JobBase):
 
@@ -21,7 +20,14 @@ class ShellJob(job.JobBase):
         }
 
     def run(self, *args, **kwargs):
-        return {'returncode': call(args)}
+        p = Popen(list(args), stdin=PIPE, stdout=PIPE, stderr=PIPE,shell=True)
+        output, err = p.communicate("input data that is passed to subprocess' stdin")
+        rc={}
+        if not output:
+           raise Exception(err)
+      
+        
+        return {'returncode': p.returncode,'result':output}
 
 
 if __name__ == "__main__":
